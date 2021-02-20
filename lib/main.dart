@@ -1,31 +1,47 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:test_flutter_application/homepage.dart';
-import 'package:test_flutter_application/servicepage.dart';
-import 'package:test_flutter_application/myinfopage.dart';
+import 'package:test_flutter_application/bodyfatpage.dart';
+import 'package:test_flutter_application/stopwatchpage.dart';
+import 'package:test_flutter_application/todopage.dart';
 
-void main() => runApp(MyApp());
+void main() async{
+  SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(systemNavigationBarColor: Colors.blue,),);
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
+  runApp(MyApp());
+}
 
 class MyApp extends StatelessWidget {
+  final _focusNode = FocusScopeNode();
+
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Flutter Demo Application',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-        primaryColorDark: Colors.blue,
-        accentColor: Colors.blueAccent,
-        bottomNavigationBarTheme: BottomNavigationBarThemeData(backgroundColor: Colors.blue, selectedItemColor: Colors.white),
-        visualDensity: VisualDensity.adaptivePlatformDensity,
+    return GestureDetector(
+      onTap: (){_focusNode.unfocus();},
+      child: FocusScope(
+        node: _focusNode,
+        child: MaterialApp(
+          title: 'Flutter Demo Application',
+          theme: ThemeData(
+            primaryColor: Colors.blue,
+            primaryColorDark: Colors.blue,
+            accentColor: Colors.blueAccent,
+            bottomNavigationBarTheme: BottomNavigationBarThemeData(backgroundColor: Colors.blue, selectedItemColor: Colors.white, type: BottomNavigationBarType.fixed, ),
+            visualDensity: VisualDensity.adaptivePlatformDensity,
+          ),
+          darkTheme: ThemeData.dark().copyWith(
+            primaryColor: Colors.blue,
+            primaryColorDark: Colors.blue,
+            accentColor: Colors.blueAccent,
+            bottomNavigationBarTheme: BottomNavigationBarThemeData(backgroundColor: Colors.blue, selectedItemColor: Colors.white, type: BottomNavigationBarType.fixed, ),
+            snackBarTheme: SnackBarThemeData(contentTextStyle: TextStyle(color: Colors.white), backgroundColor: Colors.black26, actionTextColor: Colors.blueAccent),
+            visualDensity: VisualDensity.adaptivePlatformDensity,
+          ),
+          home: MainPage(),
+        ),
       ),
-      darkTheme: ThemeData.dark().copyWith(
-        primaryColor: Colors.blue,
-        primaryColorDark: Colors.blue,
-        accentColor: Colors.blueAccent,
-        bottomNavigationBarTheme: BottomNavigationBarThemeData(backgroundColor: Colors.blue, selectedItemColor: Colors.white),
-        snackBarTheme: SnackBarThemeData(contentTextStyle: TextStyle(color: Colors.white), backgroundColor: Colors.black12, actionTextColor: Colors.blueAccent),
-        visualDensity: VisualDensity.adaptivePlatformDensity,
-      ),
-      home: MainPage(),
     );
   }
 }
@@ -37,13 +53,14 @@ class MainPage extends StatefulWidget {
 
 class _MainPageState extends State<MainPage> {
   int _index = 0;
-  var _pages = [ HomePage(), ServicePage(), MyInfoPage() ];
+  final List<Text> _title = [Text('Home Page'),Text('Body Fat Page'),Text('StopWatch Page'),Text('To Do Page'),];
+  final List<Widget> _pages = <Widget>[HomePage(), BodyFatPage(), StopWatchPage(), ToDoPage(), ];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Flutter Demo',),
+        title: _title[_index],
         actions: <Widget>[ IconButton(icon: Icon(Icons.settings,), onPressed: () { print('Menu Pressed'); },), ],
       ),
       drawer: Drawer(
@@ -56,14 +73,15 @@ class _MainPageState extends State<MainPage> {
           ],
         ),
       ),
-      body: _pages[_index],
+      body: IndexedStack(index: _index, children: _pages,),
       bottomNavigationBar: BottomNavigationBar(
-        onTap: (index){ setState(() {_index = index;}); },
+        onTap: (_index){ setState(() {this._index = _index;}); FocusScope.of(context).unfocus(); }, //{pageController.jumpToPage(_index);},
         currentIndex: _index,
         items: <BottomNavigationBarItem>[
           BottomNavigationBarItem( title: Text("Home"), icon: Icon(Icons.home), ),
-          BottomNavigationBarItem( title: Text("Service"), icon: Icon(Icons.assignment), ),
-          BottomNavigationBarItem( title: Text("My Info"), icon: Icon(Icons.account_circle), ),
+          BottomNavigationBarItem( title: Text("Body Fat"), icon: Icon(Icons.accessibility), ),
+          BottomNavigationBarItem( title: Text("StopWatch"), icon: Icon(Icons.timer), ),
+          BottomNavigationBarItem( title: Text("To Do"), icon: Icon(Icons.assignment), ),
         ],
       ),
     );
